@@ -5,6 +5,7 @@
 #
 
 import numpy as np
+import statistics 
 
 # Method for reading in the "pickled" object images
 def unpickle(file):
@@ -13,6 +14,11 @@ def unpickle(file):
         dict = pickle.load(fo, encoding='bytes')
     return dict
 
+# Method for preprocessing the data
+def preprocess(row_entry, label):
+    transform1 = row_entry.reshape((3,32,32))
+    transform2 = np.transpose(transform1, [1,2,0])
+    return transform2
 
 # Read in the datasets 5 training batches and 1 test batch, each has 10,000 images
 data_batch_1 = unpickle('cifar-10-batches-py/data_batch_1')
@@ -43,8 +49,8 @@ db6_data = test_batch[b'data']
 # tb_labels = test_batch[b'labels']
 # tb_data = test_batch[b'data']
 
-# print(db1_data[0,:]) # --> first image
-# print(db1_data[:,0]) # -->first column
+print(len(db1_data[0,:])) # --> first row
+print(len(db1_data[:,0])) # -->first column
 
 
 ###################################################################################################
@@ -65,7 +71,7 @@ def ridge_regression(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T1, T2, y1, y2, lam
     # Perform the training over all the different lambdas
     for lam in range(0, num_iterations):
         print("Using lambda = " + str(lambdas[lam]))
-        w = np.linalg.inv(A.T @ A + lambdas[lam] * np.indentity(len(A))) @ A.T @ d
+        w = np.linalg.inv(A.T @ A + lambdas[lam] * np.identity(len(A[0,:]))) @ A.T @ d
 
         # Find the predictions for the first test set
         t_hat = T1 @ w
@@ -89,9 +95,9 @@ def ridge_regression(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T1, T2, y1, y2, lam
     
 
     # Use the selected lambda with the rest of the training data to get w
-    lam = lamdas[min_idx]
+    lam = lambdas[min_idx]
 
-    w = np.linalg.inv(A.T @ A + lam * np.indentity(len(A))) @ A.T @ d
+    w = np.linalg.inv(A.T @ A + lam * np.identity(len(A[0,:]))) @ A.T @ d
 
     # Find the predictions for the second test set
     y_hat = T2 @ w
@@ -112,8 +118,41 @@ def ridge_regression(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T1, T2, y1, y2, lam
 
 ###################################################################################################
 #
-# K-Mean Clustering? --> Is this going to work?
+# K-Nearest Neighbors
 #
+def k_nearest_neighbors(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T1, y1, k):
+    A = np.vstack((A1, A2, A3, A4, A5)) #Training matrix
+    d = np.vstack((d1, d2, d3, d4, d5)) #Known classifiers
+    distances = []
+    
+    for i in range(0, len(A[:,0])):
+        for j in range(0, len(T1[:,0])):
+            curr_A = A[i,:]
+            curr_T = T1[j,:]
+
+            distance = distance_fn(curr_A, curr_T)
+            distances[j].append((distance, i))
+    
+    sort_distances = []
+    for j in range(0, len(T1[:,0])):
+        sort_distances[j] = sorted(distances[j])
+
+    k_nearest = []
+    for j in range(0, len(T1[:,0])):
+        k_nearest[j] = sort_distances[j,:k]
+    
+    k_labels = []
+    for j in range(0, len(T1[:,0]))
+        for dist, i in k_nearest[j]:
+            k_labels[j].append(d[i])
+
+    labels = []
+    for j in range(0, len(T1[:,0]))
+        labels[j] = statistics.mode(k_labels[j])
+
+    #TODO: check the labels to find the error rate, squared error
+
+    return labels
 
 
 
