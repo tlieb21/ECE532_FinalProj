@@ -120,29 +120,36 @@ def ridge_regression(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T1, T2, y1, y2, lam
 #
 # K-Nearest Neighbors
 #
-def k_nearest_neighbors(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T1, y1, k):
+def k_nearest_neighbors(A1, A2, A3, A4, A5, d1, d2, d3, d4, d5, T, y1, k):
     A = np.vstack((A1, A2, A3, A4, A5)) #Training matrix
     d = np.vstack((d1, d2, d3, d4, d5)) #Known classifiers
-    distances = []
-    
-    for i in range(0, len(A[:,0])):
-        for j in range(0, len(T1[:,0])):
-            curr_A = A[i,:]
-            curr_T = T1[j,:]
+    distances = np.empty((num_test, num_train))
 
-            distance = distance_fn(curr_A, curr_T)
-            distances[j].append((distance, i))
+    train_size = len(A[:,0])
+    test_size = len(T1[:,0])
     
+    for i in range(0, test_size):
+        for j in range(0, train_size):
+            # curr_A = A[i,:]
+            # curr_T = T1[j,:]
+            # distance = distance_fn(curr_A, curr_T)
+            # distances[j].append((distance, i))
+            distances[i,j] = np.linalg.norm(A[j,:]-T[i,:])
+
+    distances = np.sqrt((T**2).sum(axis=1)[:, np.newaxis] + (A**2).sum(axis=1) - 2 * T.dot(A.T))
+    # distances = np.sqrt((T**2).sum(axis=1)[:, np.newaxis] + (self.A**2).sum(axis=1) - 2 * T.dot(self.A.T))
+
+
     sort_distances = []
-    for j in range(0, len(T1[:,0])):
+    for j in range(0, test_size):
         sort_distances[j] = sorted(distances[j])
 
     k_nearest = []
-    for j in range(0, len(T1[:,0])):
+    for j in range(0, test_size):
         k_nearest[j] = sort_distances[j,:k]
     
     k_labels = []
-    for j in range(0, len(T1[:,0]))
+    for j in range(0, test_size)
         for dist, i in k_nearest[j]:
             k_labels[j].append(d[i])
 
