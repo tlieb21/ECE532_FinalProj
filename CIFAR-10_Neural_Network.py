@@ -79,13 +79,14 @@ testset = torchvision.datasets.CIFAR10(root='./data', train=False,
 testloader = torch.utils.data.DataLoader(testset, batch_size=10,
                                          shuffle=False, num_workers=0)
 
+nn_width = 10
 
 class Net(n_net.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = n_net.Conv2d(3, 6, 5)
+        self.conv1 = n_net.Conv2d(3, nn_width, 5)
         self.pool = n_net.MaxPool2d(2, 2)
-        self.conv2 = n_net.Conv2d(6, 16, 5)
+        self.conv2 = n_net.Conv2d(nn_width, 16, 5)
         
         self.fc1 = n_net.Linear(16 * 5 * 5, 120)
         self.fc2 = n_net.Linear(120, 84)
@@ -103,20 +104,21 @@ class Net(n_net.Module):
 
 
 net = Net()
-# print(net)
 
+# criterion = n_net.MSELoss()
 # criterion = n_net.CrossEntropyLoss()
-criterion = n_net.MSELoss()
-# criterion = n_net.L1Loss()
+criterion = n_net.L1Loss()
 
 
 # lr = learning rate, momentum = helps avoid local minimum
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
 
 # NN Training Loop
+num_iterations = 1
 count = 0
 total_loss = 0
-for trial in range(0,2):
+
+for trial in range(0,num_iterations):
     for idx, curr in enumerate(trainloader,0):
         count += 1
         data, label = curr
@@ -145,18 +147,32 @@ for trial in range(0,2):
 
 print(count)
 
-correct = 0
-total = 0
-with torch.no_grad():
-    for data in testloader:
-        images, labels = data
-        outputs = net(images)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+# correct = 0
+test_size = 10000
+error_count = 0
+squared_error = 0
+training_errors = np.zeros(test_size)
+training_sqs = np.zeros(test_size)
 
-print('Accuracy of the network on the 10000 test images: %d %%' % (
-    100 * correct / total))
+with torch.no_grad():
+    for curr in testloader:
+        data, labels = curr
+        out = net(data)
+        b, predicted = torch.max(out.data, 1)
+        # predicted = torch.max(out.data, 1)
+
+        error_count += (predicted != labels).sum().item()
+        squared_error += np.linalg.norm(predicted - labels)**2
+        
+
+error_rate = error_count / test_size
+mse = squared_error / test_size
+
+        # correct += (predicted == labels).sum().item()
+
+print("Neural Network trained with " + str(num_iterations) + " iterations")
+print("Error Rate: " + str(round(error_rate*100,3)) + ", Mean Sqaured Error: " + str(round(mse,3)))
+print()
 
 now = datetime.now()
 current_time = now.strftime("%H:%M:%S")
