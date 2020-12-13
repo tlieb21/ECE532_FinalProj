@@ -63,10 +63,10 @@ db4_data = rgb2gray(db4_data)
 db5_data = rgb2gray(db5_data)
 db6_data = rgb2gray(db6_data)
 
-A = np.vstack((db1_data, db3_data, db4_data, db5_data, db6_data)) #Training matrix
-d = np.column_stack((np.array(db1_labels), np.array(db3_labels), np.array(db4_labels), np.array(db5_labels), np.array(db6_labels))).reshape(50000,1) #Known classifiers
-T = db2_data
-y = db3_labels
+A = np.vstack((db1_data, db2_data, db3_data, db4_data, db5_data)) #Training matrix
+d = np.column_stack((np.array(db1_labels), np.array(db2_labels), np.array(db3_labels), np.array(db4_labels), np.array(db5_labels))).reshape(50000,1) #Known classifiers
+T = db6_data
+y = db6_labels
 
 train_size = len(A[:,0])
 test_size = len(T[:,0])
@@ -117,12 +117,12 @@ for i in range(0,len(ks)):
         min_error = training_errors[i]  
         
 error_rate = training_errors[min_idx]
-squared_error = training_sqs[min_idx]
+mse = training_sqs[min_idx] / test_size
         
 print("Optimal Lambda Chosen: " + str(ks[min_idx]))
 print()
 
-print("Error Rate: " + str(round(error_rate*100,3)) + ", Sqaured Error: " + str(round(squared_error,3)))
+print("Error Rate: " + str(round(error_rate*100,3)) + ", Mean Sqaured Error: " + str(round(mse,3)))
 print()
 
 now = datetime.now()

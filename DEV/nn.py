@@ -134,8 +134,8 @@ class Net(nn.Module):
 net = Net()
 # print(net)
 
-criterion = nn.CrossEntropyLoss()
-# criterion = nn.MSELoss()
+# criterion = nn.CrossEntropyLoss()
+criterion = nn.MSELoss()
 # criterion = nn.L1Loss()
 
 
@@ -162,7 +162,7 @@ for trial in range(0,2):
     for idx, curr in enumerate(trainloader,0):
         count += 1
         data, label = curr
-        # label = torch.from_numpy(tf.keras.utils.to_categorical(label, num_classes=10))
+        label = torch.from_numpy(tf.keras.utils.to_categorical(label, num_classes=10))
         optimizer.zero_grad()
 
         out = net(data)
